@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Follow-ups — SalesPilot AI CRM{% endblock %}
+{% block page_title %}Follow-ups{% endblock %}
+{% set active = "followups" %}
+
+{% block topbar_actions %}
+  <a href="/followups/new" class="btn btn-primary btn-sm" id="add-followup-btn">+ Schedule Follow-up</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Filter toggle ─────────────────────────────────────────────── -->
+<div style="display:flex;gap:0.5rem;margin-bottom:1.25rem;" id="followup-tabs">
+  <a href="/followups/"
+     class="btn {% if not pending_only %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">
+    All
+  </a>
+  <a href="/followups/?pending_only=true"
+     class="btn {% if pending_only %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">
+    Pending only
+  </a>
+</div>
+
+<!-- ── Follow-ups table ───────────────────────────────────────────── -->
+<div class="card" style="padding:0;overflow:hidden;">
+  {% if followups %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Lead</th>
+          <th>Scheduled</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in followups %}
+        <tr id="followup-row-{{ f.id }}"
+            style="{% if f.is_completed %}opacity:0.55;{% endif %}">
+          <td style="font-weight:{% if not f.is_completed %}600{% else %}400{% endif %};">
+            {{ f.subject }}
+          </td>
+          <td>
+            <a href="/leads/{{ f.lead_id }}/edit" style="font-size:0.82rem;">
+              Lead #{{ f.lead_id }}
+            </a>
+          </td>
+          <td style="font-size:0.82rem;color:var(--muted);">
+            {{ f.scheduled_at.strftime("%b %d, %Y %H:%M") }}
+          </td>
+          <td>
+            {% if f.is_completed %}
+              <span class="badge badge-qualified">✓ Done</span>
+            {% else %}
+              {% set now = f.scheduled_at %}
+              <span class="badge badge-new">Pending</span>
+            {% endif %}
+          </td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                     font-size:0.82rem;color:var(--muted);">
+            {{ f.notes or "—" }}
+          </td>
+          <td>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              {% if not f.is_completed %}
+              <form method="POST" action="/followups/{{ f.id }}/complete" style="display:inline;">
+                <button class="btn btn-success btn-sm" id="complete-followup-{{ f.id }}">✓ Mark Done</button>
+              </form>
+              {% endif %}
+              <form method="POST" action="/followups/{{ f.id }}/delete" style="display:inline;"
+                    data-confirm="Delete this follow-up?">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>{{ "No pending follow-ups 🎉" if pending_only else "No follow-ups yet" }}</h3>
+    <p>
+      {% if pending_only %}
+        You're all caught up!
+      {% else %}
+        <a href="/followups/new">Schedule your first follow-up →</a>
+      {% endif %}
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top:0.75rem;font-size:0.8rem;color:var(--muted);">
+  {{ followups | length }} follow-up{{ "s" if followups | length != 1 else "" }}
+  &nbsp;·&nbsp;
+  {{ followups | selectattr("is_completed", "equalto", false) | list | length }} pending
+</div>
+
+{% endblock %}

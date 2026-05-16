@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Deals Pipeline — SalesPilot AI CRM{% endblock %}
+{% block page_title %}Deal Pipeline{% endblock %}
+{% set active = "deals" %}
+
+{% block topbar_actions %}
+  <a href="/deals/new" class="btn btn-primary btn-sm" id="add-deal-btn">+ New Deal</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Stage filter tabs ──────────────────────────────────────────── -->
+<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;" id="stage-tabs">
+  <a href="/deals/" class="btn {% if not sel_stage %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">All</a>
+  {% for s in stages %}
+  <a href="/deals/?stage={{ s.value }}"
+     class="btn {% if sel_stage == s.value %}btn-primary{% else %}btn-ghost{% endif %} btn-sm">
+    {{ s.value | title }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- ── Kanban board ───────────────────────────────────────────────── -->
+<div class="pipeline" id="deals-pipeline">
+  {% for stage, stage_deals in pipeline.items() %}
+  <div class="pipeline-col" id="pipeline-col-{{ stage.value }}">
+    <div class="pipeline-col-header">
+      <span class="pipeline-col-title
+        {% if stage.value == 'won' %}style="color:var(--success)"{% endif %}
+        {% if stage.value == 'lost' %}style="color:var(--danger)"{% endif %}
+      ">
+        {% if stage.value == 'won' %}🏆{% elif stage.value == 'lost' %}✗{% elif stage.value == 'prospecting' %}🔍{% elif stage.value == 'proposal' %}📄{% else %}🤝{% endif %}
+        {{ stage.value | title }}
+      </span>
+      <span class="pipeline-count">{{ stage_deals | length }}</span>
+    </div>
+
+    {% if stage_deals %}
+      {% for deal in stage_deals %}
+      <div class="deal-card" id="deal-card-{{ deal.id }}">
+        <div class="deal-card-title">{{ deal.title }}</div>
+        <div class="deal-card-amount">₹{{ "{:,}".format(deal.amount) }}</div>
+        <div class="deal-card-meta">
+          {% if deal.expected_close_date %}
+          📅 Close: {{ deal.expected_close_date.strftime("%b %d, %Y") }}
+          {% else %}
+          📅 No close date set
+          {% endif %}
+        </div>
+        <div style="display:flex;gap:0.4rem;margin-top:0.65rem;">
+          <a href="/deals/{{ deal.id }}/edit" class="btn btn-ghost btn-sm">Edit</a>
+          <form method="POST" action="/deals/{{ deal.id }}/delete" style="display:inline;"
+                data-confirm="Delete deal '{{ deal.title }}'?">
+            <button class="btn btn-danger btn-sm">✕</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="text-align:center;padding:1.5rem 0.5rem;color:var(--muted);font-size:0.8rem;">
+        No deals here
+      </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ── Revenue summary ────────────────────────────────────────────── -->
+{% set won_total = pipeline['won'] | sum(attribute='amount') if pipeline['won'] is defined else 0 %}
+<div style="margin-top:1rem;font-size:0.85rem;color:var(--muted);">
+  {{ deals | length }} total deal{{ "s" if deals | length != 1 else "" }}
+  &nbsp;·&nbsp;
+  <span style="color:var(--success);font-weight:600;">
+    ₹{{ "{:,}".format(pipeline[stages[-2]] | sum(attribute='amount') if pipeline[stages[-2]] else 0) }} won
+  </span>
+</div>
+
+{% endblock %}

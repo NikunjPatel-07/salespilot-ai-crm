@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Deal" if deal else "New Deal" }} — SalesPilot AI CRM{% endblock %}
+{% block page_title %}{{ "Edit Deal" if deal else "New Deal" }}{% endblock %}
+{% set active = "deals" %}
+
+{% block topbar_actions %}
+  <a href="/deals/" class="btn btn-ghost btn-sm">← Back to Pipeline</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:680px;">
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.5rem;">
+    {{ "Update deal details" if deal else "Add a new deal to the pipeline" }}
+  </h2>
+
+  <form method="POST"
+        action="{{ '/deals/' + deal.id|string + '/edit' if deal else '/deals/new' }}"
+        id="deal-form">
+
+    <div class="form-group">
+      <label for="title">Deal Title *</label>
+      <input id="title" name="title" type="text"
+             value="{{ deal.title if deal else '' }}"
+             placeholder="e.g. Acme Enterprise Subscription"
+             required />
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="customer_id">Customer *</label>
+        <select id="customer_id" name="customer_id" {% if deal %}disabled{% endif %}>
+          {% for c in customers %}
+          <option value="{{ c.id }}"
+            {{ "selected" if deal and deal.customer_id == c.id }}>
+            {{ c.name }}{% if c.company %} — {{ c.company }}{% endif %}
+          </option>
+          {% endfor %}
+        </select>
+        {% if deal %}
+        {# keep value in a hidden field when select is disabled #}
+        <input type="hidden" name="customer_id" value="{{ deal.customer_id }}" />
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label for="amount">Deal Amount (₹)</label>
+        <input id="amount" name="amount" type="number" min="0"
+               value="{{ deal.amount if deal else 0 }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="stage">Pipeline Stage</label>
+        <select id="stage" name="stage">
+          {% for s in stages %}
+          <option value="{{ s.value }}"
+            {{ "selected" if deal and deal.stage.value == s.value }}>
+            {{ s.value | title }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="expected_close_date">Expected Close Date</label>
+        <input id="expected_close_date" name="expected_close_date" type="date"
+               value="{{ deal.expected_close_date.isoformat() if deal and deal.expected_close_date else '' }}" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" placeholder="Deal context, decision makers, blockers…">{{ deal.notes if deal else '' }}</textarea>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+      <button type="submit" class="btn btn-primary" id="deal-save-btn">
+        {{ "Save Changes" if deal else "Create Deal" }}
+      </button>
+      <a href="/deals/" class="btn btn-ghost">Cancel</a>
+      {% if deal %}
+      <form method="POST" action="/deals/{{ deal.id }}/delete" style="margin-left:auto;"
+            data-confirm="Permanently delete this deal?">
+        <button type="submit" class="btn btn-danger">Delete Deal</button>
+      </form>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}

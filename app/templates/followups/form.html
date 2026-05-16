@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Schedule Follow-up — SalesPilot AI CRM{% endblock %}
+{% block page_title %}Schedule Follow-up{% endblock %}
+{% set active = "followups" %}
+
+{% block topbar_actions %}
+  <a href="/followups/" class="btn btn-ghost btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:580px;">
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.5rem;">
+    Schedule a follow-up reminder
+  </h2>
+
+  <form method="POST" action="/followups/new" id="followup-form">
+    <div class="form-group">
+      <label for="lead_id">Lead *</label>
+      <select id="lead_id" name="lead_id" required>
+        <option value="" disabled selected>Select a lead…</option>
+        {% for lead in leads %}
+        <option value="{{ lead.id }}">
+          {{ lead.name }}{% if lead.company %} — {{ lead.company }}{% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="subject">Subject *</label>
+      <input id="subject" name="subject" type="text"
+             placeholder="e.g. Send pricing deck, Demo call, Check-in"
+             required />
+    </div>
+
+    <div class="form-group">
+      <label for="scheduled_at">Scheduled Date & Time *</label>
+      <input id="scheduled_at" name="scheduled_at" type="datetime-local" required />
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" name="notes"
+                placeholder="Any prep notes or context for this follow-up…"></textarea>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+      <button type="submit" class="btn btn-primary" id="followup-save-btn">
+        Schedule Follow-up
+      </button>
+      <a href="/followups/" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Default datetime-local to tomorrow at 10:00
+  const dt = document.getElementById("scheduled_at");
+  if (dt && !dt.value) {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    dt.value = tomorrow.toISOString().slice(0, 16);
+  }
+</script>
+{% endblock %}

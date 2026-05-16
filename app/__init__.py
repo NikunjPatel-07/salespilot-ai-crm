@@ -1,0 +1,1 @@
+# SalesPilot AI CRM package

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Customers — SalesPilot AI CRM{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% set active = "customers" %}
+
+{% block topbar_actions %}
+  <a href="/customers/new" class="btn btn-primary btn-sm" id="add-customer-btn">+ Add Customer</a>
+{% endblock %}
+
+{% block content %}
+<form method="GET" action="/customers/" class="search-bar" id="customers-filter-form">
+  <input type="text" name="search" value="{{ search }}" placeholder="Search by name or email…" id="customers-search" />
+  <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+  <a href="/customers/" class="btn btn-ghost btn-sm">Clear</a>
+</form>
+
+<div class="card" style="padding:0;overflow:hidden;">
+  {% if customers %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Company</th><th>Title</th><th>Lifetime Value</th><th>Since</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+        <tr id="customer-row-{{ c.id }}">
+          <td style="font-weight:600;">{{ c.name }}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">{{ c.email }}</td>
+          <td style="color:var(--muted);">{{ c.company or "—" }}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">{{ c.title or "—" }}</td>
+          <td style="font-weight:600;color:var(--success);">₹{{ "{:,}".format(c.lifetime_value) }}</td>
+          <td style="color:var(--muted);font-size:0.8rem;">{{ c.created_at.strftime("%b %d, %Y") }}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem;">
+              <a href="/customers/{{ c.id }}/edit" class="btn btn-ghost btn-sm">Edit</a>
+              <form method="POST" action="/customers/{{ c.id }}/delete" style="display:inline;"
+                    data-confirm="Delete customer '{{ c.name }}'?">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>No customers yet</h3>
+    <p>Convert a lead or <a href="/customers/new">add manually</a>.</p>
+  </div>
+  {% endif %}
+</div>
+<div style="margin-top:0.75rem;font-size:0.8rem;color:var(--muted);">
+  {{ customers | length }} customer{{ "s" if customers | length != 1 else "" }}
+</div>
+{% endblock %}

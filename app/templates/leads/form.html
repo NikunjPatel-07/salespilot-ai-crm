@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Lead" if lead else "New Lead" }} — SalesPilot AI CRM{% endblock %}
+{% block page_title %}{{ "Edit Lead" if lead else "New Lead" }}{% endblock %}
+{% set active = "leads" %}
+
+{% block topbar_actions %}
+  <a href="/leads/" class="btn btn-ghost btn-sm">← Back to Leads</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr {% if lead %}380px{% endif %};gap:1.5rem;align-items:start;">
+
+  <!-- ── Form ─────────────────────────────────────────────────── -->
+  <div class="card">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:1.5rem;">
+      {{ "Update lead information" if lead else "Capture a new lead" }}
+    </h2>
+
+    <form method="POST" action="{{ '/leads/' + lead.id|string + '/edit' if lead else '/leads/new' }}" id="lead-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input id="name" name="name" type="text" value="{{ lead.name if lead else '' }}" placeholder="Jane Smith" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input id="email" name="email" type="email" value="{{ lead.email if lead else '' }}" placeholder="jane@acme.com" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" value="{{ lead.phone if lead else '' }}" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group">
+          <label for="company">Company</label>
+          <input id="company" name="company" type="text" value="{{ lead.company if lead else '' }}" placeholder="Acme Inc." />
+        </div>
+        <div class="form-group">
+          <label for="title">Job Title</label>
+          <input id="title" name="title" type="text" value="{{ lead.title if lead else '' }}" placeholder="VP of Sales" />
+        </div>
+        <div class="form-group">
+          <label for="score">Lead Score (0–100)</label>
+          <input id="score" name="score" type="number" min="0" max="100"
+                 value="{{ lead.score if lead else 0 }}" />
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            {% for s in statuses %}
+            <option value="{{ s.value }}" {{ "selected" if lead and lead.status.value == s.value }}>{{ s.value | title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="source">Source</label>
+          <select id="source" name="source">
+            {% for s in sources %}
+            <option value="{{ s.value }}" {{ "selected" if lead and lead.source.value == s.value }}>{{ s.value | replace("_"," ") | title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes" placeholder="Any context about this lead…">{{ lead.notes if lead else '' }}</textarea>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+        <button type="submit" class="btn btn-primary" id="lead-save-btn">
+          {{ "Save Changes" if lead else "Create Lead" }}
+        </button>
+        <a href="/leads/" class="btn btn-ghost">Cancel</a>
+        {% if lead %}
+        <form method="POST" action="/leads/{{ lead.id }}/delete" style="margin-left:auto;"
+              data-confirm="Permanently delete this lead?">
+          <button type="submit" class="btn btn-danger">Delete Lead</button>
+        </form>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- ── AI Panel (edit mode only) ────────────────────────────── -->
+  {% if lead %}
+  <div>
+    <div class="ai-panel" id="ai-panel">
+      <div class="ai-panel-title">✦ AI Sales Assistant</div>
+      <div class="ai-buttons">
+        <button class="btn btn-ghost btn-sm" data-ai-action="followup-message" id="ai-followup-btn">Follow-up Message</button>
+        <button class="btn btn-ghost btn-sm" data-ai-action="cold-pitch"       id="ai-pitch-btn">Cold Pitch</button>
+        <button class="btn btn-ghost btn-sm" data-ai-action="next-action"      id="ai-action-btn">Next Action</button>
+        <button class="btn btn-ghost btn-sm" data-ai-action="score-explain"    id="ai-score-btn">Explain Score</button>
+      </div>
+      <div class="ai-result" id="ai-result">Click a button above to generate AI insight.</div>
+      <button class="btn btn-ghost btn-sm" id="copy-btn" onclick="copyAIResult()" style="margin-top:0.5rem;">Copy</button>
+    </div>
+
+    <!-- Quick schedule follow-up -->
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-title" style="margin-bottom:0.75rem;">Quick Follow-up</div>
+      <form method="POST" action="/followups/new" id="quick-followup-form">
+        <input type="hidden" name="lead_id" value="{{ lead.id }}" />
+        <div class="form-group">
+          <label for="quick-subject">Subject</label>
+          <input id="quick-subject" name="subject" type="text" placeholder="e.g. Demo call" required />
+        </div>
+        <div class="form-group">
+          <label for="quick-date">Scheduled At</label>
+          <input id="quick-date" name="scheduled_at" type="datetime-local" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Schedule</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if lead %}
+<script>initAIPanel({{ lead.id }});</script>
+{% endif %}
+{% endblock %}

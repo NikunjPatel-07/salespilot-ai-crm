@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Leads — SalesPilot AI CRM{% endblock %}
+{% block page_title %}Leads{% endblock %}
+{% set active = "leads" %}
+
+{% block topbar_actions %}
+  <a href="/leads/new" class="btn btn-primary btn-sm" id="add-lead-btn">+ Add Lead</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Filters ──────────────────────────────────────────────────── -->
+<form method="GET" action="/leads/" class="search-bar" id="leads-filter-form">
+  <input type="text" name="search" value="{{ search }}" placeholder="Search by name, email, company…" id="leads-search" />
+  <select name="status" id="leads-status-filter">
+    <option value="">All Statuses</option>
+    {% for s in statuses %}
+    <option value="{{ s.value }}" {% if sel_status == s.value %}selected{% endif %}>{{ s.value | title }}</option>
+    {% endfor %}
+  </select>
+  <select name="source" id="leads-source-filter">
+    <option value="">All Sources</option>
+    {% for s in sources %}
+    <option value="{{ s.value }}" {% if sel_source == s.value %}selected{% endif %}>{{ s.value | replace("_"," ") | title }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-ghost btn-sm">Filter</button>
+  <a href="/leads/" class="btn btn-ghost btn-sm">Clear</a>
+</form>
+
+<!-- ── Table ────────────────────────────────────────────────────── -->
+<div class="card" style="padding:0;overflow:hidden;">
+  {% if leads %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Company</th>
+          <th>Status</th>
+          <th>Source</th>
+          <th>Score</th>
+          <th>Added</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+        <tr id="lead-row-{{ lead.id }}">
+          <td style="font-weight:600;">{{ lead.name }}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">{{ lead.email }}</td>
+          <td style="color:var(--muted);">{{ lead.company or "—" }}</td>
+          <td><span class="badge badge-{{ lead.status.value }}">{{ lead.status.value }}</span></td>
+          <td style="color:var(--muted);font-size:0.82rem;">{{ lead.source.value | replace("_"," ") | title }}</td>
+          <td>
+            <div class="score-bar-wrap">
+              <div class="score-bar-bg">
+                <div class="score-bar-fill" style="width:{{ lead.score }}%;background:{% if lead.score >= 70 %}var(--success){% elif lead.score >= 40 %}var(--warning){% else %}var(--danger){% endif %}"></div>
+              </div>
+              <div class="score-val" style="color:var(--muted)">{{ lead.score }}/100</div>
+            </div>
+          </td>
+          <td style="color:var(--muted);font-size:0.8rem;">{{ lead.created_at.strftime("%b %d, %Y") }}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              <a href="/leads/{{ lead.id }}/edit" class="btn btn-ghost btn-sm">Edit</a>
+              <form method="POST" action="/customers/convert/{{ lead.id }}" style="display:inline;"
+                    data-confirm="Convert '{{ lead.name }}' to a customer?">
+                <button class="btn btn-success btn-sm" type="submit">Convert</button>
+              </form>
+              <form method="POST" action="/leads/{{ lead.id }}/delete" style="display:inline;"
+                    data-confirm="Permanently delete '{{ lead.name }}'?">
+                <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h3>No leads found</h3>
+    <p>{% if search or sel_status or sel_source %}Try clearing your filters.{% else %}<a href="/leads/new">Add your first lead →</a>{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top:0.75rem;font-size:0.8rem;color:var(--muted);">
+  Showing {{ leads | length }} lead{{ "s" if leads | length != 1 else "" }}
+</div>
+{% endblock %}

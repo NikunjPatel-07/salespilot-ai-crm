@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Customer" if customer else "New Customer" }} — SalesPilot AI CRM{% endblock %}
+{% block page_title %}{{ "Edit Customer" if customer else "New Customer" }}{% endblock %}
+{% set active = "customers" %}
+
+{% block topbar_actions %}
+  <a href="/customers/" class="btn btn-ghost btn-sm">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:680px;">
+  <form method="POST" action="{{ '/customers/' + customer.id|string + '/edit' if customer else '/customers/new' }}" id="customer-form">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="name">Full Name *</label>
+        <input id="name" name="name" type="text" value="{{ customer.name if customer else '' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input id="email" name="email" type="email" value="{{ customer.email if customer else '' }}" required />
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" value="{{ customer.phone if customer else '' }}" />
+      </div>
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input id="company" name="company" type="text" value="{{ customer.company if customer else '' }}" />
+      </div>
+      <div class="form-group">
+        <label for="title">Job Title</label>
+        <input id="title" name="title" type="text" value="{{ customer.title if customer else '' }}" />
+      </div>
+      <div class="form-group">
+        <label for="lifetime_value">Lifetime Value (₹)</label>
+        <input id="lifetime_value" name="lifetime_value" type="number" min="0"
+               value="{{ customer.lifetime_value if customer else 0 }}" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes">{{ customer.notes if customer else '' }}</textarea>
+    </div>
+    <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+      <button type="submit" class="btn btn-primary" id="customer-save-btn">
+        {{ "Save Changes" if customer else "Create Customer" }}
+      </button>
+      <a href="/customers/" class="btn btn-ghost">Cancel</a>
+      {% if customer %}
+      <form method="POST" action="/customers/{{ customer.id }}/delete" style="margin-left:auto;"
+            data-confirm="Delete this customer?">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}
