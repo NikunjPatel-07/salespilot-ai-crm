@@ -43,7 +43,7 @@ def api_login(
 
 @router.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return templates.TemplateResponse("auth/login.html", {"request": request})
+    return templates.TemplateResponse(request, "auth/login.html", {"request": request})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -58,7 +58,7 @@ def login_submit(
         user = authenticate_user(db, email, password)
     except HTTPException as exc:
         return templates.TemplateResponse(
-            "auth/login.html", {"request": request, "error": exc.detail}
+            request, "auth/login.html", {"request": request, "error": exc.detail}
         )
     token = create_access_token({"sub": str(user.id)})
     resp = RedirectResponse(url="/dashboard", status_code=302)
@@ -68,7 +68,7 @@ def login_submit(
 
 @router.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    return templates.TemplateResponse("auth/register.html", {"request": request})
+    return templates.TemplateResponse(request, "auth/register.html", {"request": request})
 
 
 @router.post("/register-form", response_class=HTMLResponse)
@@ -84,7 +84,7 @@ def register_submit(
         create_user(db, data)
     except HTTPException as exc:
         return templates.TemplateResponse(
-            "auth/register.html", {"request": request, "error": exc.detail}
+            request, "auth/register.html", {"request": request, "error": exc.detail}
         )
     return RedirectResponse(url="/auth/login?registered=1", status_code=302)
 

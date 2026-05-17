@@ -73,7 +73,7 @@ def deals_page(
     for deal in deals:
         pipeline[deal.stage].append(deal)
     customers = db.query(Customer).filter(Customer.owner_id == current_user.id).all()
-    return templates.TemplateResponse("deals/list.html", {
+    return templates.TemplateResponse(request, "deals/list.html", {
         "request": request, "deals": deals, "pipeline": pipeline,
         "user": current_user, "stages": list(DealStage),
         "sel_stage": stage, "customers": customers,
@@ -87,7 +87,7 @@ def deal_new_page(
     current_user: User = Depends(get_current_user),
 ):
     customers = db.query(Customer).filter(Customer.owner_id == current_user.id).all()
-    return templates.TemplateResponse("deals/form.html", {
+    return templates.TemplateResponse(request, "deals/form.html", {
         "request": request, "user": current_user,
         "deal": None, "customers": customers, "stages": list(DealStage),
     })
@@ -121,7 +121,7 @@ def deal_edit_page(
 ):
     deal = get_deal(db, deal_id, current_user.id)
     customers = db.query(Customer).filter(Customer.owner_id == current_user.id).all()
-    return templates.TemplateResponse("deals/form.html", {
+    return templates.TemplateResponse(request, "deals/form.html", {
         "request": request, "user": current_user,
         "deal": deal, "customers": customers, "stages": list(DealStage),
     })

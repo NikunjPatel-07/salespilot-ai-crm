@@ -62,7 +62,7 @@ def dashboard(
         .limit(5).all()
     )
 
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse(request, "dashboard.html", {
         "request": request,
         "user": current_user,
         "total_leads": total_leads,

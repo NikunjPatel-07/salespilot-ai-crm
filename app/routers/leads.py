@@ -82,7 +82,7 @@ def leads_page(
     status_filter = LeadStatus(status) if status else None
     source_filter = LeadSource(source) if source else None
     leads = get_leads(db, current_user.id, status_filter, source_filter, search or None)
-    return templates.TemplateResponse("leads/list.html", {
+    return templates.TemplateResponse(request, "leads/list.html", {
         "request": request,
         "leads": leads,
         "user": current_user,
@@ -99,7 +99,7 @@ def lead_new_page(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
-    return templates.TemplateResponse("leads/form.html", {
+    return templates.TemplateResponse(request, "leads/form.html", {
         "request": request,
         "user": current_user,
         "lead": None,
@@ -141,7 +141,7 @@ def lead_edit_page(
     current_user: User = Depends(get_current_user),
 ):
     lead = get_lead(db, lead_id, current_user.id)
-    return templates.TemplateResponse("leads/form.html", {
+    return templates.TemplateResponse(request, "leads/form.html", {
         "request": request,
         "user": current_user,
         "lead": lead,

@@ -76,7 +76,7 @@ def customers_page(
     current_user: User = Depends(get_current_user),
 ):
     customers = get_customers(db, current_user.id, search or None)
-    return templates.TemplateResponse("customers/list.html", {
+    return templates.TemplateResponse(request, "customers/list.html", {
         "request": request, "customers": customers,
         "user": current_user, "search": search,
     })
@@ -87,7 +87,7 @@ def customer_new_page(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
-    return templates.TemplateResponse("customers/form.html", {
+    return templates.TemplateResponse(request, "customers/form.html", {
         "request": request, "user": current_user, "customer": None,
     })
 
@@ -117,7 +117,7 @@ def customer_edit_page(
     current_user: User = Depends(get_current_user),
 ):
     customer = get_customer(db, customer_id, current_user.id)
-    return templates.TemplateResponse("customers/form.html", {
+    return templates.TemplateResponse(request, "customers/form.html", {
         "request": request, "user": current_user, "customer": customer,
     })
 

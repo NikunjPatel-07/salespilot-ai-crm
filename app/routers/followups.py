@@ -67,7 +67,7 @@ def followups_page(
     current_user: User = Depends(get_current_user),
 ):
     followups = get_followups(db, current_user.id, pending_only)
-    return templates.TemplateResponse("followups/list.html", {
+    return templates.TemplateResponse(request, "followups/list.html", {
         "request": request, "followups": followups,
         "user": current_user, "pending_only": pending_only,
     })
@@ -80,7 +80,7 @@ def followup_new_page(
     current_user: User = Depends(get_current_user),
 ):
     leads = get_leads(db, current_user.id)
-    return templates.TemplateResponse("followups/form.html", {
+    return templates.TemplateResponse(request, "followups/form.html", {
         "request": request, "user": current_user, "followup": None, "leads": leads,
     })
 
